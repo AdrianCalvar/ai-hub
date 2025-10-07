@@ -1,0 +1,30 @@
+version: "3"
+
+vars:
+  OLLAMA_DIR: modules/core/services/ollama
+
+tasks:
+  up:
+    desc: Levanta todo el hub
+    dir: "{{.OLLAMA_DIR}}"
+    cmds:
+      - docker network create hub_net || true
+      - docker compose up -d
+
+  down:
+    desc: Apaga los servicios
+    dir: "{{.OLLAMA_DIR}}"
+    cmds:
+      - docker compose down
+
+  run:ollama:
+    desc: Ejecuta prompt con Ollama
+    dir: "{{.OLLAMA_DIR}}"
+    cmds:
+      - docker exec -it ollama ollama run llama3
+
+  pull:ollama:
+    dir: "{{.OLLAMA_DIR}}"
+    desc: Descarga modelo
+    cmds:
+      - docker exec -it ollama ollama pull llama3
