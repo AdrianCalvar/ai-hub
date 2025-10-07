@@ -1,0 +1,1 @@
+Aqui se pretende almacenar todo aquello relacionado con el proceso de descubrimiento dentro del hub: exploración de herramientas, utilidades, sistemas, metodos, etc ateriores a la implementación real de estos
