@@ -377,7 +377,33 @@ Sesión N+4: Refinamiento → Nueva iteración
 - Profundizar en soluciones para puntos de dolor específicos
 - [Lo que el usuario decida]
 
----
+## 📊 Estado Post-Discovery de Workflows
 
-**Versión:** 1.0  
-**Este documento contiene contexto del USUARIO, no del SISTEMA a construir.**
+### Workflows Priorizados (Octubre 2025)
+
+- **P0 (MVP):** 4 workflows identificados (ver workflows.md)
+- **P1 (Segunda Ola):** 5 workflows
+- **P2+:** 8 workflows adicionales
+
+### Decisión Clave: Auto-Tagging en P0
+
+Originalmente considerado P2, pero análisis reveló que es **infraestructura crítica**:
+
+- Foundational para búsqueda y organización
+- Debe implementarse antes de acumular notas sin clasificar
+- Permite arquitectura emergente del sistema
+
+### Mobile Strategy
+
+- **Sync:** Git (no Obsidian Sync - decisión firme)
+- **Capture:** Obsidian mobile primario, Telegram bot como fallback
+- **Implementation:** Mes 2-3, después de MVP estable en PC
+
+### Próximo Milestone
+
+**Fase 0: Obsidian Foundation (Semana 1)**
+
+- Crear estructura de vault
+- Configurar plugins P0
+- Templates funcionales
+- Git sync automático
