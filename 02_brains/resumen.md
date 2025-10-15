@@ -125,6 +125,39 @@ Gratuito > Open-source > Freemium > Pago
 
 ---
 
+---
+
+## 🏗️ Arquitectura Definida
+
+### Stack Tecnológico Confirmado
+
+**Capa de Interacción:**
+
+- Obsidian (interface + storage)
+- Claude Pro (reasoning manual)
+
+**Capa de Orquestación:**
+
+- Quickadd (macros + hotkeys)
+- n8n (workflows automáticos) - Phase 1+
+
+**Capa de Ejecución:**
+
+- Claude Pro (decisiones complejas)
+- Ollama (transformaciones automáticas)
+  - llama3.3 70B-Q4 (reasoning)
+  - deepseek-coder 16B (transformaciones)
+
+**Capa de Estado:**
+
+- Obsidian Vault (working directory)
+- Git + GitHub (version control + backup)
+- ChromaDB (semantic search) - Phase 2+
+
+**Ref:** [[workflows.md#Arquitectura]] | [[ADR-003]]
+
+---
+
 ## 🎯 Alcance del Sistema
 
 ### Módulos Core (Deben incluirse)

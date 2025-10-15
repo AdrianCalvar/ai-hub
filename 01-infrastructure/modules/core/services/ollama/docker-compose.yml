@@ -8,9 +8,11 @@ services:
     ports:
       - "11434:11434" # puerto por defecto
     volumes:
-      - ./models:/root/.ollama # persistencia de modelos
+      - ./models:/root/.ollama # persistencia de modelos (aquí se guarda qwen2.5:7b)
     environment:
       - OLLAMA_HOST=0.0.0.0 # acepta conexiones desde fuera del contenedor
+      - OLLAMA_KEEP_ALIVE=30m # 30 minutos
+
     networks:
       - hub_net
 

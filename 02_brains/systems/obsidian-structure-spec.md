@@ -23,16 +23,11 @@ Este documento define la estructura completa del vault de Obsidian para el IA Hu
 obsidian-vault/
 │
 ├── 00-Inbox/                    # LANDING ZONE - Todo entra aquí
-│   ├── quick-captures/          # Capturas ultra-rápidas (1 línea)
 │   ├── ideas/                   # Ideas con contexto desarrollado
-│   ├── resources/               # URLs y recursos externos
 │   └── _README.md               # Guía de procesamiento de inbox
 │
 ├── 01-Projects/                 # TRABAJO ACTIVO
-│   ├── _templates/              # Templates de proyecto
-│   │   ├── project.md
-│   │   ├── task.md
-│   │   └── meeting-note.md
+│   ├── templates/              # Templates de proyecto
 │   │
 │   ├── {project-name}/          # Un folder por proyecto activo
 │   │   ├── README.md            # Overview del proyecto
@@ -45,21 +40,6 @@ obsidian-vault/
 │       └── {archived-project}/
 │
 ├── 02-Knowledge/                # REFERENCIA PERMANENTE
-│   ├── architecture/            # Architecture Decision Records (ADRs)
-│   │   ├── ADR-001-*.md
-│   │   ├── ADR-002-*.md
-│   │   └── _template-adr.md
-│   │
-│   ├── patterns/                # Patrones de código y diseño
-│   │   ├── validation-pattern.md
-│   │   ├── error-handling-pattern.md
-│   │   └── repository-pattern.md
-│   │
-│   ├── methodologies/           # Filosofías y metodologías de trabajo
-│   │   ├── coding-philosophy.md
-│   │   ├── response-style-ai.md
-│   │   └── task-breakdown-method.md
-│   │
 │   ├── concepts/                # Teoría y conceptos técnicos
 │   │   ├── ddd-introduction.md
 │   │   ├── hexagonal-architecture.md
@@ -70,27 +50,8 @@ obsidian-vault/
 │   │   ├── debugging-mongodb.md
 │   │   └── deploy-to-production.md
 │   │
-│   ├── code-snippets/           # Snippets de código reutilizables
-│   │   ├── react-custom-hooks.md
-│   │   ├── typescript-utils.md
-│   │   └── mongodb-queries.md
-│   │
-│   └── resources/               # Recursos externos y herramientas
-│       ├── articles/            # Artículos técnicos procesados
-│       ├── videos/              # Videos y talks catalogados
-│       ├── prompts/             # Prompts de IA reutilizables
-│       └── tools/               # Herramientas y utilities
-│
-├── 03-Daily/                    # JOURNAL Y TRACKING
-│   ├── 2025-10-07.md            # Daily note del día
-│   ├── 2025-10-08.md
-│   ├── _templates/
-│   │   └── daily-note.md
-│   └── reviews/                 # Revisiones semanales/mensuales
-│       ├── 2025-W41.md          # Weekly review
-│       └── 2025-10.md           # Monthly review
-│
-├── 04-System/                   # META - Sistema mismo
+│   ├── prompts/
+├── 99-System/                   # META - Sistema mismo
 │   ├── dashboards/
 │   │   ├── main.md              # Dashboard principal (punto de entrada)
 │   │   ├── projects.md          # Vista detallada de proyectos
@@ -99,6 +60,7 @@ obsidian-vault/
 │   │
 │   ├── templates/               # Templates globales
 │   │   ├── quick-capture.md
+│   │   ├── session-note.md
 │   │   ├── idea.md
 │   │   ├── resource.md
 │   │   ├── meeting.md
@@ -108,23 +70,7 @@ obsidian-vault/
 │   │   ├── n8n-workflows.md     # Documentación de workflows n8n
 │   │   ├── auto-tag-rules.md    # Reglas de auto-tagging
 │   │   └── workflow-logs.md     # Logs de ejecución
-│   │
-│   └── meta/                    # Sobre el sistema
-│       ├── setup-guide.md       # Guía de setup inicial
-│       ├── plugin-configs.md    # Configuraciones de plugins
-│       └── changelog.md         # Cambios al sistema
 │
-└── .obsidian/                   # Configuración de Obsidian
-    ├── plugins/                 # Plugins instalados
-    │   ├── dataview/
-    │   ├── templater/
-    │   ├── quickadd/
-    │   ├── obsidian-git/
-    │   └── obsidian-local-rest-api/
-    ├── snippets/                # CSS snippets
-    │   └── dashboard-style.css
-    ├── themes/                  # Temas
-    └── workspace.json           # Estado del workspace
 ```
 
 ---
