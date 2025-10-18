@@ -2,171 +2,177 @@ version: "3"
 
 vars:
   OLLAMA_DIR: modules/core/services/ollama
-  MODEL_NAME: qwen2.5:7b
+  RAG_DIR: modules/core/services/rag-service
 
 tasks:
-  check-docker:
-    desc: Verifica que Docker está corriendo
-    silent: true
+  # ============================================
+  # SETUP INICIAL
+  # ============================================
+
+  setup:rag:
+    desc: Instalar dependencias del RAG service
+    dir: "{{.RAG_DIR}}"
     cmds:
-      - |
-        docker info > /dev/null 2>&1 || (echo "❌ Docker no está corriendo. Inicia Docker Desktop primero." && exit 1)
+      - npm install
+      - echo "✅ Dependencias instaladas"
+
+  # ============================================
+  # DOCKER SERVICES
+  # ============================================
 
   up:
-    desc: Levanta todo el hub (Ollama)
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
+    desc: Levanta todo el hub (Ollama + RAG)
     cmds:
       - docker network create hub_net || true
+      - task: up:ollama
+      - echo "⏳ Esperando 5s para que Ollama esté listo..."
+      - sleep 5
+      - task: up:rag
+
+  up:ollama:
+    desc: Levanta solo Ollama
+    dir: "{{.OLLAMA_DIR}}"
+    cmds:
       - docker compose up -d
-      - echo "✅ Ollama corriendo en http://localhost:11434"
-      - echo "⏳ Esperando 3 segundos..."
-      - powershell -Command "Start-Sleep -Seconds 3"
-      - echo "🔥 Precargando modelo..."
-      - docker exec ollama ollama run {{.MODEL_NAME}} "listo" > nul 2>&1
-      - echo "✅ Modelo precargado y listo"
+      - echo "✅ Ollama iniciado"
+
+  up:rag:
+    desc: Levanta solo RAG service
+    dir: "{{.RAG_DIR}}"
+    cmds:
+      - docker compose up -d --build
+      - echo "✅ RAG service iniciado"
 
   down:
-    desc: Apaga los servicios
-    deps: [check-docker]
+    desc: Apaga todos los servicios
+    cmds:
+      - task: down:rag
+      - task: down:ollama
+
+  down:ollama:
+    desc: Apaga solo Ollama
     dir: "{{.OLLAMA_DIR}}"
     cmds:
       - docker compose down
-      - echo "🛑 Ollama detenido"
 
-  logs:
+  down:rag:
+    desc: Apaga solo RAG service
+    dir: "{{.RAG_DIR}}"
+    cmds:
+      - docker compose down
+
+  # ============================================
+  # DESARROLLO LOCAL (sin Docker)
+  # ============================================
+
+  dev:rag:
+    desc: Ejecuta RAG service en modo desarrollo (local, sin Docker)
+    dir: "{{.RAG_DIR}}"
+    cmds:
+      - npm run dev
+
+  # ============================================
+  # LOGS
+  # ============================================
+
+  logs:ollama:
     desc: Ver logs de Ollama
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
     cmds:
       - docker logs -f ollama
 
-  status:
-    desc: Verifica estado de Ollama y modelos instalados
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
+  logs:rag:
+    desc: Ver logs de RAG service
     cmds:
-      - echo "📊 Estado del contenedor:"
-      - docker ps -f name=ollama
+      - docker logs -f rag-service
+
+  logs:all:
+    desc: Ver logs de todos los servicios
+    cmds:
+      - docker logs -f ollama &
+      - docker logs -f rag-service
+
+  # ============================================
+  # HEALTH CHECKS
+  # ============================================
+
+  health:
+    desc: Verificar salud de todos los servicios
+    cmds:
+      - echo "🔍 Verificando servicios..."
       - echo ""
-      - echo "📦 Modelos instalados:"
-      - docker exec ollama ollama list
-
-  # ===== GESTIÓN DE MODELOS =====
-
-  pull-qwen:
-    desc: Descarga Qwen2.5 7b (modelo principal para Obsidian)
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    cmds:
-      - echo "⬇️  Descargando {{.MODEL_NAME}} (~4.7GB)..."
-      - docker exec ollama ollama pull {{.MODEL_NAME}}
-      - echo "✅ Modelo descargado. Verifica con 'task status'"
-
-  pull-model:
-    desc: Descarga modelo específico (uso -> task pull-model MODEL=nombre:tag)
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    cmds:
-      - docker exec ollama ollama pull {{.MODEL}}
-
-  remove-model:
-    desc: Elimina modelo (uso -> task remove-model MODEL=nombre:tag)
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    cmds:
-      - docker exec ollama ollama rm {{.MODEL}}
-
-  # ===== TESTING =====
-
-  test-qwen:
-    desc: Prueba rápida de Qwen2.5 7b
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    cmds:
-      - docker exec ollama ollama run {{.MODEL_NAME}} "Reescribe este texto para mejor legibilidad - hola esto es una prueba rapida del sistema de ia local"
-
-  run-qwen:
-    desc: Abre chat interactivo con Qwen2.5 7b
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    cmds:
-      - docker exec -it ollama ollama run {{.MODEL_NAME}}
-
-  run-model:
-    desc: Ejecuta modelo específico (uso -> task run-model MODEL=nombre:tag)
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    cmds:
-      - docker exec -it ollama ollama run {{.MODEL}}
-
-  # ===== BENCHMARKS =====
-
-  benchmark:
-    desc: Mide velocidad de respuesta de Qwen2.5 7b
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    cmds:
-      - echo "🔬 Benchmark de {{.MODEL_NAME}}..."
-      - echo "Test 1 - Generación corta"
-      - docker exec ollama ollama run {{.MODEL_NAME}} "Di hola" --verbose
+      - echo "📡 Ollama:"
+      - curl -s http://localhost:11434/api/tags | head -n 5 || echo "❌ Ollama no responde"
       - echo ""
-      - echo "Test 2 - Generación media"
-      - docker exec ollama ollama run {{.MODEL_NAME}} "Explica en 50 palabras qué es un algoritmo"
+      - echo "📡 RAG Service:"
+      - curl -s http://localhost:3000/health | jq || echo "❌ RAG service no responde"
+      - echo ""
+      - echo "🔍 Deep Health:"
+      - curl -s http://localhost:3000/health/deep | jq
 
-  # ===== MANTENIMIENTO =====
+  # ============================================
+  # MODELOS OLLAMA
+  # ============================================
 
-  restart:
-    desc: Reinicia contenedor de Ollama
-    deps: [check-docker]
+  pull:models:
+    desc: Descargar todos los modelos necesarios
+    cmds:
+      - echo "📥 Descargando modelos..."
+      - task: pull:llm
+      - task: pull:embed
+
+  pull:llm:
+    desc: Descargar modelo LLM (llama3.2:3b)
     dir: "{{.OLLAMA_DIR}}"
     cmds:
-      - docker restart ollama
-      - echo "🔄 Ollama reiniciado"
+      - docker exec -it ollama ollama pull llama3.2:3b
 
-  shell:
-    desc: Abre shell dentro del contenedor
-    deps: [check-docker]
+  pull:embed:
+    desc: Descargar modelo de embeddings (nomic-embed-text)
     dir: "{{.OLLAMA_DIR}}"
     cmds:
-      - docker exec -it ollama /bin/bash
+      - docker exec -it ollama ollama pull nomic-embed-text
 
-  clean-models:
-    desc: Elimina TODOS los modelos (libera espacio en disco)
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    prompt: "⚠️  Esto eliminará TODOS los modelos. ¿Continuar?"
+  list:models:
+    desc: Listar modelos instalados
     cmds:
-      - docker exec ollama sh -c "rm -rf /root/.ollama/models/*"
-      - echo "🧹 Modelos eliminados. Ejecuta 'task pull-qwen' para reinstalar"
+      - docker exec -it ollama ollama list
 
-  # ===== SETUP INICIAL =====
+  # ============================================
+  # RAG OPERATIONS (para después)
+  # ============================================
 
-  setup:
-    desc: Setup completo (levanta Ollama + descarga Qwen2.5 7b)
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
+  index:
+    desc: Re-indexar vault completo
     cmds:
+      - curl -X POST http://localhost:3000/index
+
+  query:
+    desc: Hacer query al sistema
+    cmds:
+      - |
+        curl -X POST http://localhost:3000/query \
+          -H "Content-Type: application/json" \
+          -d '{"query": "{{.CLI_ARGS}}"}'
+
+  stats:
+    desc: Ver estadísticas del índice
+    cmds:
+      - curl -s http://localhost:3000/stats | jq
+
+  # ============================================
+  # LIMPIEZA
+  # ============================================
+
+  clean:
+    desc: Limpiar vector DB y rebuild
+    dir: "{{.RAG_DIR}}"
+    cmds:
+      - rm -rf data/*.lance
+      - echo "✅ Vector DB limpiada"
+
+  reset:
+    desc: Reset completo (down + clean + up)
+    cmds:
+      - task: down
+      - task: clean
       - task: up
-      - echo "⏳ Esperando 5 segundos a que Ollama esté listo..."
-      - powershell -Command "Start-Sleep -Seconds 5"
-      - task: pull-qwen
-      - task: test-qwen
-      - echo ""
-      - echo "✨ Setup completado. Configura ahora Obsidian con"
-      - echo "   URL - http://localhost:11434"
-      - echo "   Model - {{.MODEL_NAME}}"
-  model-status:
-    desc: Verifica si el modelo está cargado en memoria
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    cmds:
-      - echo "📊 Estado de modelos en memoria:"
-      - docker exec ollama ollama ps
-  wake:
-    desc: Despierta el modelo si está lento
-    deps: [check-docker]
-    dir: "{{.OLLAMA_DIR}}"
-    cmds:
-      - docker exec ollama ollama run {{.MODEL_NAME}} "wake" > nul 2>&1
-      - echo "⚡ Modelo reactivado"
