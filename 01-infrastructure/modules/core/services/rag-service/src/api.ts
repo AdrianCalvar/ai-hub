@@ -119,7 +119,38 @@ app.post('/index', async (req, res) => {
     });
   }
 });
-
+app.post('/query', async (req, res) => {
+  try {
+    const { query: queryText, project, type, dateFrom, dateTo, limit } = req.body;
+    
+    if (!queryText) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Missing query parameter' 
+      });
+    }
+    
+    console.log(`📥 Query request: "${queryText}"`);
+    
+    const { query } = await import('./query');
+    const result = await query(queryText, { project, type, dateFrom, dateTo, limit });
+    
+    res.json({
+      success: true,
+      query: queryText,
+      answer: result.answer,
+      sources: result.sources,
+      totalChunksSearched: result.totalChunksSearched,
+    });
+    
+  } catch (error) {
+    console.error('❌ Query error:', error);
+    res.status(500).json({
+      success: false,
+      error: (error as Error).message
+    });
+  }
+}); 
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('❌ Error:', err);
@@ -142,6 +173,7 @@ app.listen(PORT, () => {
   console.log(`🔍 Deep health: http://localhost:${PORT}/health/deep`);
   console.log(`📊 Stats: http://localhost:${PORT}/stats`);
   console.log(`🔄 Index: POST http://localhost:${PORT}/index`);
+  console.log(`🔎 Query: POST http://localhost:${PORT}/query`);
   console.log('🚀 ========================================');
   console.log('');
 });
