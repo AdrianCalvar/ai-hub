@@ -12,7 +12,7 @@ export const config = {
 
   // Vault paths
   vault: {
-    basePath: process.env.VAULT_PATH || '../../../Adrian\'s Mind',
+    basePath: process.env.VAULT_PATH || 'D:\\workspace\\obsidian\\Adrian\'s Mind',
     projectsPath: '01-Projects',
     contextFiles: ['tasks.md', 'ideas.md', 'decisions.md', 'blockers.md'],
   },
