@@ -6,15 +6,15 @@ services:
     container_name: rag-service
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
     volumes:
       - ./data:/app/data
-      - ../../../../Adrian's Mind:/app/vault:ro
+      - ${VAULT_PATH}:/app/vault:ro
+    env_file:
+      - .env
     environment:
-      - OLLAMA_HOST=http://ollama:11434
-      - VAULT_PATH=/app/vault
+      - VAULT_PATH=/app/vault # Dentro del container siempre es /app/vault
       - DB_PATH=/app/data/vectors.lance
-      - NODE_ENV=production
     networks:
       - hub_net
     depends_on:
@@ -23,5 +23,3 @@ services:
 networks:
   hub_net:
     external: true
-
-# Nota: El servicio ollama debe estar definido en ../ollama/docker-compose.yml
