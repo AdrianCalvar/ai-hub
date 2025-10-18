@@ -1,5 +1,5 @@
 // src/api.ts
-// REST API básica - Empezamos solo con health check
+// REST API con todos los endpoints
 
 import express from 'express';
 import { config, validateConfig } from './config';
@@ -79,6 +79,47 @@ app.get('/health/deep', async (req, res) => {
   });
 });
 
+// Stats endpoint
+app.get('/stats', async (req, res) => {
+  try {
+    const { getStats } = await import('./database');
+    const stats = await getStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('❌ Error getting stats:', error);
+    res.status(500).json({
+      success: false,
+      error: (error as Error).message
+    });
+  }
+});
+
+// Index endpoint (trigger re-indexing)
+app.post('/index', async (req, res) => {
+  try {
+    console.log('📥 Received index request');
+    
+    const { indexVault } = await import('./indexer');
+    
+    // Ejecutar en background
+    indexVault().catch((error: Error) => {
+      console.error('❌ Background indexing failed:', error);
+    });
+    
+    // Responder inmediatamente
+    res.json({
+      success: true,
+      message: 'Indexing started in background'
+    });
+  } catch (error) {
+    console.error('❌ Error starting indexing:', error);
+    res.status(500).json({
+      success: false,
+      error: (error as Error).message
+    });
+  }
+});
+
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('❌ Error:', err);
@@ -99,6 +140,8 @@ app.listen(PORT, () => {
   console.log(`📡 API listening on port ${PORT}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
   console.log(`🔍 Deep health: http://localhost:${PORT}/health/deep`);
+  console.log(`📊 Stats: http://localhost:${PORT}/stats`);
+  console.log(`🔄 Index: POST http://localhost:${PORT}/index`);
   console.log('🚀 ========================================');
   console.log('');
 });
@@ -112,4 +155,4 @@ process.on('SIGTERM', () => {
 process.on('SIGINT', () => {
   console.log('⚠️  SIGINT received, shutting down gracefully...');
   process.exit(0);
-}); 
+});

@@ -6,7 +6,8 @@ import * as path from 'path';
 import { config } from './config';
 import { parseContextFile, VaultChunk, validateChunk } from './parser';
 import { generateEmbedding } from './embeddings';
-
+import { saveChunks } from './database';
+import type { VaultChunkWithVector } from './database';
 /**
  * Obtiene lista de proyectos del vault
  */
@@ -109,6 +110,10 @@ export function extractAllChunks(): VaultChunk[] {
 /**
  * Indexar vault completo (sin guardar en DB todavía)
  */
+
+/**
+ * Indexar vault completo y guardar en LanceDB
+ */
 export async function indexVault() {
   console.log('🔄 ========================================');
   console.log('🔄 Starting Indexing Process');
@@ -128,26 +133,41 @@ export async function indexVault() {
       return;
     }
 
-    // 2. Generar embeddings (por ahora solo test con los primeros 3)
-    console.log('🔄 Generating embeddings (testing with first 3)...');
-    const testChunks = chunks.slice(0, 3);
+    // 2. Generar embeddings para TODOS los chunks
+    console.log('🔄 Generating embeddings...');
+    const chunksWithVectors: VaultChunkWithVector[] = [];
 
-    for (let i = 0; i < testChunks.length; i++) {
-      const chunk = testChunks[i];
-      console.log(`   [${i + 1}/${testChunks.length}] ${chunk.project}/${chunk.type}: ${chunk.text.substring(0, 40)}...`);
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
       
-      const embedding = await generateEmbedding(chunk.text);
-      console.log(`      ✓ Embedding generated (${embedding.length} dims)`);
+      if ((i + 1) % 10 === 0 || i === 0) {
+        console.log(`   [${i + 1}/${chunks.length}] ${chunk.project}/${chunk.type}`);
+      }
+
+      try {
+        const vector = await generateEmbedding(chunk.text);
+        chunksWithVectors.push({ ...chunk, vector });
+      } catch (error) {
+        console.error(`   ❌ Error generating embedding for chunk ${chunk.id}:`, error);
+        // Continuar con los demás chunks
+      }
     }
+
+    console.log(`✓ Embeddings generated: ${chunksWithVectors.length}/${chunks.length}`);
+    console.log('');
+
+    // 3. Guardar en LanceDB
+    console.log('💾 Saving to vector database...');
+    await saveChunks(chunksWithVectors);
+    console.log('');
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
-    console.log('');
     console.log('✅ ========================================');
-    console.log(`✅ Indexing Test Completed (${duration}s)`);
+    console.log(`✅ Indexing Completed (${duration}s)`);
     console.log('✅ ========================================');
-    console.log(`📊 Total chunks: ${chunks.length}`);
-    console.log(`🧪 Tested: ${testChunks.length} chunks`);
+    console.log(`📊 Total chunks indexed: ${chunksWithVectors.length}`);
+    console.log(`💾 Database: ${config.db.path}`);
     console.log('');
 
   } catch (error) {

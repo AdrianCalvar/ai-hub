@@ -1,6 +1,4 @@
 // src/database.ts
-// Módulo para interactuar con LanceDB
-
 import { connect, Table } from 'vectordb';
 import { config } from './config';
 import { VaultChunk } from './parser';
@@ -34,10 +32,29 @@ export async function connectDB() {
 }
 
 /**
+ * Normalizar chunk para LanceDB (reemplazar undefined con strings vacíos)
+ */
+function normalizeChunk(chunk: VaultChunkWithVector): any {
+  return {
+    id: chunk.id,
+    text: chunk.text,
+    type: chunk.type,
+    project: chunk.project,
+    sourceFile: chunk.sourceFile,
+    dailyRef: chunk.dailyRef || '',  // ✅ String vacío en lugar de undefined
+    date: chunk.date || '',           // ✅ String vacío en lugar de undefined
+    vector: chunk.vector,
+  };
+}
+
+/**
  * Guardar chunks con vectores en la base de datos
  */
 export async function saveChunks(chunks: VaultChunkWithVector[]): Promise<void> {
   const db = await connectDB();
+
+  // Normalizar chunks (reemplazar undefined con valores por defecto)
+  const normalizedChunks = chunks.map(normalizeChunk);
 
   // Borrar tabla existente si existe
   try {
@@ -48,8 +65,8 @@ export async function saveChunks(chunks: VaultChunkWithVector[]): Promise<void> 
   }
 
   // Crear nueva tabla
-  await db.createTable(config.db.tableName, chunks);
-  console.log(`✓ Created table with ${chunks.length} chunks`);
+  await db.createTable(config.db.tableName, normalizedChunks);
+  console.log(`✓ Created table with ${normalizedChunks.length} chunks`);
 }
 
 /**
@@ -58,7 +75,7 @@ export async function saveChunks(chunks: VaultChunkWithVector[]): Promise<void> 
 export async function searchSimilar(
   queryVector: number[],
   limit: number = 10
-): Promise<VaultChunkWithVector[]> {
+): Promise<any[]> {
   const db = await connectDB();
   
   const table = await db.openTable(config.db.tableName);
@@ -68,7 +85,7 @@ export async function searchSimilar(
     .limit(limit)
     .execute();
 
-  return results as VaultChunkWithVector[];
+  return results;
 }
 
 /**
