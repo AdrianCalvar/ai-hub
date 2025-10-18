@@ -147,12 +147,9 @@ tasks:
       - curl -X POST http://localhost:3000/index
 
   query:
-    desc: Hacer query al sistema
+    desc: Hacer query al sistema (ej. task query -- "tu pregunta aquí")
     cmds:
-      - |
-        curl -X POST http://localhost:3000/query \
-          -H "Content-Type: application/json" \
-          -d '{"query": "{{.CLI_ARGS}}"}'
+      - node modules/core/scripts/query.js {{.CLI_ARGS}}
 
   stats:
     desc: Ver estadísticas del índice

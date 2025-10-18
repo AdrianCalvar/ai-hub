@@ -1,10 +1,22 @@
-// src/api.ts
-// REST API con todos los endpoints
-
 import express from 'express';
 import { config, validateConfig } from './config';
 
 const app = express();
+
+// ✅ CORS - Permitir peticiones desde Obsidian
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*'); // O específicamente 'app://obsidian.md'
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
 app.use(express.json());
 
 // Validar configuración al inicio
@@ -15,7 +27,6 @@ try {
   console.error('❌ Error en configuración:', error);
   process.exit(1);
 }
-
 // Health check básico
 app.get('/health', (req, res) => {
   res.json({
@@ -97,20 +108,27 @@ app.get('/stats', async (req, res) => {
 // Index endpoint (trigger re-indexing)
 app.post('/index', async (req, res) => {
   try {
-    console.log('📥 Received index request');
+    console.log('📥 Received index request from Obsidian');
     
     const { indexVault } = await import('./indexer');
     
-    // Ejecutar en background
-    indexVault().catch((error: Error) => {
-      console.error('❌ Background indexing failed:', error);
-    });
-    
-    // Responder inmediatamente
+    // Responder inmediatamente (no bloqueante)
     res.json({
       success: true,
       message: 'Indexing started in background'
     });
+    
+    // Ejecutar en background con pequeño delay
+    setTimeout(() => {
+      indexVault()
+        .then(() => {
+          console.log('✅ Background indexing completed successfully');
+        })
+        .catch((error: Error) => {
+          console.error('❌ Background indexing failed:', error);
+        });
+    }, 1000); // 1 segundo de delay para que Obsidian termine de escribir archivos
+    
   } catch (error) {
     console.error('❌ Error starting indexing:', error);
     res.status(500).json({
