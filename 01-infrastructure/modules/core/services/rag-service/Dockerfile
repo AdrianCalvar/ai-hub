@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Copiar source
 COPY tsconfig.json ./
@@ -15,8 +15,11 @@ COPY src ./src
 # Build
 RUN npm run build
 
-# Exponer puertos
+# Crear directorio para la base de datos
+RUN mkdir -p /app/data
+
+# Exponer puerto
 EXPOSE 3000
 
-# Start
+# Start en producción
 CMD ["npm", "start"]

@@ -2,42 +2,44 @@
 // Módulo para generar embeddings con Ollama
 
 import { config } from './config';
+import axios from 'axios';
+import { OllamaEmbeddingResponse } from './types';
 
 /**
  * Genera embedding para un texto usando Ollama
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  if (!text || text.trim().length === 0) {
-    throw new Error('Text cannot be empty');
-  }
-
   try {
-    const response = await fetch(`${config.ollama.host}/api/embeddings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    const response = await axios.post(
+      `${config.ollama.host}/api/embeddings`,
+      {
         model: config.ollama.embeddingModel,
-        prompt: text.trim()
-      }),
-      signal: AbortSignal.timeout(config.ollama.timeout)
-    });
+        prompt: text,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000,
+      }
+    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Ollama error (${response.status}): ${errorText}`);
-    }
-
-    const data = await response.json();
+    const data = response.data as OllamaEmbeddingResponse;
 
     if (!data.embedding || !Array.isArray(data.embedding)) {
-      throw new Error('Invalid response from Ollama: missing embedding array');
+      throw new Error('Invalid response format from Ollama');
     }
 
     return data.embedding;
-
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to generate embedding: ${error.message}`);
+    if (axios.isAxiosError(error)) {
+      console.error('Error generating embedding:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+    } else {
+      console.error('Error generating embedding:', error);
     }
     throw error;
   }

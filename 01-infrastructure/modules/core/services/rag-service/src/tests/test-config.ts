@@ -4,6 +4,7 @@
 import { config, validateConfig, printConfig } from '../config';
 import * as fs from 'fs';
 import * as path from 'path';
+import { OllamaModelsResponse } from '../types';
 
 console.log('🔍 Testing Configuration');
 console.log('========================');
@@ -82,7 +83,7 @@ fetch(`${config.ollama.host}/api/tags`, {
     }
   })
   .then(data => {
-    const models = data.models || [];
+    const models = (data as OllamaModelsResponse).models || [];
     console.log(`   ✓ Found ${models.length} models installed`);
     
     const hasEmbedding = models.some((m: any) => m.name.includes(config.ollama.embeddingModel));

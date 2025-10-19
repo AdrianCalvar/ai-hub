@@ -60,6 +60,7 @@ export const getNoteType = (fileName: string) => {
   return fileName.replace("s.md", "") as NoteType;
 };
 
+
 /**
  * Extrae todos los chunks de todos los context files
  */

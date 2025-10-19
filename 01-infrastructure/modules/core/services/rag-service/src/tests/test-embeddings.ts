@@ -2,6 +2,7 @@
 // Test simple para verificar que Ollama funciona
 
 import { config } from '../config';
+import { OllamaEmbeddingResponse } from '../types';
 
 async function testEmbeddings() {
   console.log('🧪 Testing Ollama embeddings...');
@@ -35,7 +36,7 @@ async function testEmbeddings() {
         throw new Error(`HTTP ${response.status}: ${await response.text()}`);
       }
 
-      const data = await response.json();
+      const data= await response.json() as OllamaEmbeddingResponse;
       const duration = Date.now() - startTime;
 
       console.log(`  ✅ Success! Vector length: ${data.embedding.length}`);

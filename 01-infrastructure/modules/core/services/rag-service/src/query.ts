@@ -4,7 +4,7 @@
 import { config } from './config';
 import { generateEmbedding } from './embeddings';
 import { searchSimilar } from './database';
-import { NoteType } from './types';
+import { NoteType, OllamaGenerateResponse } from './types';
 
 export interface QueryOptions {
   project?: string;
@@ -154,7 +154,7 @@ ${queryText}
       throw new Error(`Ollama error (${response.status}): ${await response.text()}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as OllamaGenerateResponse;
     return data.response || 'No pude generar una respuesta.';
 
   } catch (error) {
