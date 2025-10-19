@@ -2,11 +2,12 @@
 // Parser de context files (tasks.md, ideas.md, etc.)
 
 import { config } from './config';
+import { NoteType } from './types';
 
 export interface VaultChunk {
   id: string;
   text: string;
-  type: 'task' | 'idea' | 'decision' | 'blocker';
+  type: NoteType;
   project: string;
   sourceFile: string;
   dailyRef?: string;
@@ -23,7 +24,7 @@ export interface VaultChunk {
 export function parseContextFile(
   content: string,
   project: string,
-  type: 'task' | 'idea' | 'decision' | 'blocker',
+  type: NoteType,
   sourceFile: string
 ): VaultChunk[] {
   const chunks: VaultChunk[] = [];
@@ -72,6 +73,7 @@ export function parseContextFile(
         dailyRef,
         date: currentDate
       };
+      console.log("🦎 ~ chunk:", chunk);
       
       chunks.push(chunk);
       chunkIndex++;

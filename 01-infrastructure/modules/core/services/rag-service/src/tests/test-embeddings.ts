@@ -1,7 +1,7 @@
 // src/test-embeddings.ts
 // Test simple para verificar que Ollama funciona
 
-import { config } from './config';
+import { config } from '../config';
 
 async function testEmbeddings() {
   console.log('🧪 Testing Ollama embeddings...');

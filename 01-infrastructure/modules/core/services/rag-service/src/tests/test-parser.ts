@@ -1,7 +1,7 @@
 // src/test-parser.ts
 // Test del parser con datos de ejemplo
 
-import { parseContextFile } from './parser';
+import { parseContextFile } from '../parser';
 
 // Mock de un context file típico
 const mockContextFile = `# Hub - Decisiones

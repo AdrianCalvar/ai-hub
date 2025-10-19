@@ -1,7 +1,7 @@
 // src/test-config.ts
 // Verifica que la configuración está correcta
 
-import { config, validateConfig, printConfig } from './config';
+import { config, validateConfig, printConfig } from '../config';
 import * as fs from 'fs';
 import * as path from 'path';
 

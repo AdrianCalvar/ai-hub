@@ -4,10 +4,11 @@
 import { config } from './config';
 import { generateEmbedding } from './embeddings';
 import { searchSimilar } from './database';
+import { NoteType } from './types';
 
 export interface QueryOptions {
   project?: string;
-  type?: 'task' | 'idea' | 'decision' | 'blocker';
+  type?: NoteType;
   dateFrom?: string;
   dateTo?: string;
   limit?: number;

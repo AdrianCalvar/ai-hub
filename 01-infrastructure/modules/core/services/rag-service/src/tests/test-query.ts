@@ -1,7 +1,7 @@
 // src/test-query.ts
 // Test del query engine
 
-import { query } from './query';
+import { query } from '../query';
 
 async function testQuery() {
   console.log('🧪 Testing Query Engine');
