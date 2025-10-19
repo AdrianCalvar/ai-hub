@@ -9,16 +9,16 @@ services:
       - "${PORT:-3000}:3000"
     volumes:
       - ./data:/app/data
-      - ${VAULT_PATH}:/app/vault:ro
+      - "${VAULT_PATH}:/app/vault:ro"
     env_file:
       - .env
     environment:
-      - VAULT_PATH=/app/vault # Dentro del container siempre es /app/vault
+      - VAULT_PATH=/app/vault
       - DB_PATH=/app/data/vectors.lance
+      - OLLAMA_HOST=http://ollama:11434
     networks:
       - hub_net
-    depends_on:
-      - ollama
+    # Sin depends_on - manejamos el orden en el Taskfile
 
 networks:
   hub_net:

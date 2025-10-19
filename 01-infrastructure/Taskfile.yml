@@ -23,11 +23,12 @@ tasks:
   up:
     desc: Levanta todo el hub (Ollama + RAG)
     cmds:
-      - docker network create hub_net || true
+      - docker network create hub_net 2>nul || echo "Network already exists"
       - task: up:ollama
       - echo "⏳ Esperando 5s para que Ollama esté listo..."
-      - sleep 5
+      - timeout /t 5 /nobreak >nul
       - task: up:rag
+      - echo "✅ Hub completo iniciado"
 
   up:ollama:
     desc: Levanta solo Ollama
@@ -88,8 +89,8 @@ tasks:
   logs:all:
     desc: Ver logs de todos los servicios
     cmds:
-      - docker logs -f ollama &
-      - docker logs -f rag-service
+      - start cmd /k docker logs -f ollama
+      - start cmd /k docker logs -f rag-service
 
   # ============================================
   # HEALTH CHECKS
@@ -101,13 +102,11 @@ tasks:
       - echo "🔍 Verificando servicios..."
       - echo ""
       - echo "📡 Ollama:"
-      - curl -s http://localhost:11434/api/tags | head -n 5 || echo "❌ Ollama no responde"
+      - curl -s http://localhost:11434/api/tags || echo "❌ Ollama no responde"
       - echo ""
       - echo "📡 RAG Service:"
-      - curl -s http://localhost:3000/health | jq || echo "❌ RAG service no responde"
+      - curl -s http://localhost:3000/health || echo "❌ RAG service no responde"
       - echo ""
-      - echo "🔍 Deep Health:"
-      - curl -s http://localhost:3000/health/deep | jq
 
   # ============================================
   # MODELOS OLLAMA
@@ -122,13 +121,11 @@ tasks:
 
   pull:llm:
     desc: Descargar modelo LLM (llama3.2:3b)
-    dir: "{{.OLLAMA_DIR}}"
     cmds:
       - docker exec -it ollama ollama pull llama3.2:3b
 
   pull:embed:
     desc: Descargar modelo de embeddings (nomic-embed-text)
-    dir: "{{.OLLAMA_DIR}}"
     cmds:
       - docker exec -it ollama ollama pull nomic-embed-text
 
@@ -147,14 +144,14 @@ tasks:
       - curl -X POST http://localhost:3000/index
 
   query:
-    desc: Hacer query al sistema (ej. task query -- "tu pregunta aquí")
+    desc: Hacer query al sistema
     cmds:
-      - node modules/core/scripts/query.js {{.CLI_ARGS}}
+      - echo "Feature pendiente de implementación"
 
   stats:
     desc: Ver estadísticas del índice
     cmds:
-      - curl -s http://localhost:3000/stats | jq
+      - curl -s http://localhost:3000/stats
 
   # ============================================
   # LIMPIEZA
@@ -164,7 +161,7 @@ tasks:
     desc: Limpiar vector DB y rebuild
     dir: "{{.RAG_DIR}}"
     cmds:
-      - rm -rf data/*.lance
+      - cmd /c "if exist data\\*.lance del /Q data\\*.lance"
       - echo "✅ Vector DB limpiada"
 
   reset:
